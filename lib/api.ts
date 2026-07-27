@@ -10,7 +10,7 @@ declare global {
   }
 }
 
-const BUILD_TIME_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const BUILD_TIME_API_URL = process.env.NEXT_PUBLIC_API_URL || "https://palegoldenrod-gull-895963.hostingersite.com";
 
 export function getApiBaseUrl(): string {
   const runtimeUrl =
