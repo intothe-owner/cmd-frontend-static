@@ -1,0 +1,11 @@
+DirectoryIndex index.html
+Options -Indexes
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css|png|jpg|jpeg|gif|svg|webp|ico|woff|woff2)$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+  <Files "runtime-config.js">
+    Header set Cache-Control "no-store, no-cache, must-revalidate"
+  </Files>
+</IfModule>
