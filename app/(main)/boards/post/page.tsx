@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import PostActionButtons from "./PostActionButtons";
-import { apiUrl } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 import { boardListHref } from "@/lib/routes";
 
 const isImage = (url: string) => /\.(jpeg|jpg|gif|png|webp)$/i.test(url);
@@ -14,6 +14,8 @@ export default function PostDetailPage() {
   const [postId, setPostId] = useState("");
   const [boardConfig, setBoardConfig] = useState<any>(null);
   const [post, setPost] = useState<any>(null);
+  const [permissions, setPermissions] = useState({ canEdit: false, canDelete: false });
+  const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -28,20 +30,54 @@ export default function PostDetailPage() {
       return;
     }
 
-    Promise.all([
-      fetch(apiUrl(`/api/board-configs/${encodeURIComponent(nextBoardId)}`)).then((res) => res.json()),
-      fetch(apiUrl(`/api/boards/posts/${encodeURIComponent(nextPostId)}`)).then((res) => res.json()),
-    ])
-      .then(([boardJson, postJson]) => {
-        if (boardJson.success) setBoardConfig(boardJson.data);
-        if (postJson.success) setPost(postJson.data);
-      })
-      .catch((error) => console.error("게시글 로딩 실패:", error))
-      .finally(() => setIsLoading(false));
+    const loadPost = async () => {
+      try {
+        const [boardResponse, postResponse] = await Promise.all([
+          apiFetch(`/api/board-configs/${encodeURIComponent(nextBoardId)}`),
+          apiFetch(`/api/boards/posts/${encodeURIComponent(nextPostId)}`),
+        ]);
+
+        const boardJson = await boardResponse.json().catch(() => ({}));
+        const postJson = await postResponse.json().catch(() => ({}));
+
+        if (boardResponse.ok && boardJson.success) {
+          setBoardConfig(boardJson.data);
+        }
+
+        if (!postResponse.ok || !postJson.success) {
+          setErrorMessage(postJson.message || "게시글을 읽을 권한이 없거나 게시글이 존재하지 않습니다.");
+          return;
+        }
+
+        setPost(postJson.data);
+        setPermissions({
+          canEdit: Boolean(postJson.permissions?.canEdit),
+          canDelete: Boolean(postJson.permissions?.canDelete),
+        });
+      } catch (error) {
+        console.error("게시글 로딩 실패:", error);
+        setErrorMessage("게시글 서버와 통신할 수 없습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPost();
   }, []);
 
   if (isLoading) {
     return <div className="w-full flex justify-center pt-32 text-slate-500">게시글을 불러오는 중입니다...</div>;
+  }
+
+  if (errorMessage) {
+    return (
+      <div className="w-full flex justify-center pt-32">
+        <div className="text-center bg-slate-50 p-12 rounded-2xl border border-slate-200">
+          <p className="text-xl font-bold text-red-600 mb-4">{errorMessage}</p>
+          {boardId && <Link href={boardListHref(boardId)} className="text-blue-600 font-medium hover:underline">목록으로 돌아가기</Link>}
+        </div>
+      </div>
+    );
   }
 
   if (!boardId || !postId || !post) {
@@ -61,7 +97,11 @@ export default function PostDetailPage() {
   } catch {
     mediaUrls = [];
   }
+
   const hasFiles = mediaUrls.some((url) => !isImage(url) && !isVideo(url));
+  const isGuestPost = !post.memberId;
+  const canEdit = permissions.canEdit || isGuestPost;
+  const canDelete = permissions.canDelete || isGuestPost;
 
   return (
     <div className="w-full flex flex-col pt-24 pb-24">
@@ -107,7 +147,13 @@ export default function PostDetailPage() {
 
         <div className="flex justify-between items-center mt-8">
           <Link href={boardListHref(boardId)} className="px-6 py-2.5 font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 shadow-sm">목록으로</Link>
-          <PostActionButtons boardId={boardId} postId={postId} />
+          <PostActionButtons
+            boardId={boardId}
+            postId={postId}
+            canEdit={canEdit}
+            canDelete={canDelete}
+            isGuestPost={isGuestPost}
+          />
         </div>
 
         {boardConfig?.useComment && (

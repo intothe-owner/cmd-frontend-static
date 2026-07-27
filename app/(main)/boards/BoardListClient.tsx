@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { apiUrl } from '@/lib/api';
+import { apiFetch } from '@/lib/api';
 import { boardPostHref, boardWriteHref } from '@/lib/routes';
 
-export default function BoardListClient({ boardId, boardConfig, initialPosts, initialTotalPages }: any) {
+export default function BoardListClient({ boardId, boardConfig, initialPosts, initialTotalPages, initialViewerLevel }: any) {
   const [posts, setPosts] = useState(initialPosts);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
@@ -15,26 +15,20 @@ export default function BoardListClient({ boardId, boardConfig, initialPosts, in
   const boardType = boardConfig.boardType;
   const listCount = boardConfig.listCount || 10;
 
-  // 1. useEffect를 통해 로컬스토리지에서 유저 정보(level)를 가져옵니다.
-const [userLevel, setUserLevel] = useState(1);
-
-useEffect(() => {
-  const userStr = localStorage.getItem('user');
-  if (userStr) {
-    try {
-      setUserLevel(JSON.parse(userStr).level);
-    } catch (e) { }
-  }
-}, []);
+  // 백엔드가 JWT와 DB를 확인해 돌려준 현재 회원 레벨을 사용합니다.
+  const [userLevel, setUserLevel] = useState(Number(initialViewerLevel || 1));
 
   const fetchPosts = async (currentPage: number, searchQuery: string, isAppend: boolean = false) => {
     setLoading(true);
     try {
-      const res = await fetch(apiUrl(`/api/boards/${boardId}/posts?page=${currentPage}&limit=${listCount}&search=${encodeURIComponent(searchQuery)}`));
+      const res = await apiFetch(`/api/boards/${encodeURIComponent(boardId)}/posts?page=${currentPage}&limit=${listCount}&search=${encodeURIComponent(searchQuery)}`);
       const json = await res.json();
       if (json.success) {
-        setPosts(isAppend ? [...posts, ...json.data] : json.data);
-        setTotalPages(json.totalPages);
+        setPosts((currentPosts: any[]) => isAppend ? [...currentPosts, ...(json.data || [])] : (json.data || []));
+        setTotalPages(json.totalPages || 1);
+        setUserLevel(Number(json.viewer?.level || 1));
+      } else {
+        alert(json.message || '게시판을 불러올 권한이 없습니다.');
       }
     } catch (error) {
       console.error('데이터 페칭 오류:', error);

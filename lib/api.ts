@@ -10,7 +10,9 @@ declare global {
   }
 }
 
-const BUILD_TIME_API_URL = process.env.NEXT_PUBLIC_API_URL || "https://palegoldenrod-gull-895963.hostingersite.com";
+const BUILD_TIME_API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://palegoldenrod-gull-895963.hostingersite.com";
 
 export function getApiBaseUrl(): string {
   const runtimeUrl =
@@ -22,4 +24,42 @@ export function getApiBaseUrl(): string {
 export function apiUrl(path: string): string {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   return `${getApiBaseUrl()}${normalizedPath}`;
+}
+
+/** localStorage의 JWT를 Authorization 헤더에 자동으로 추가합니다. */
+export function getAuthHeaders(initialHeaders?: HeadersInit): Headers {
+  const headers = new Headers(initialHeaders);
+
+  if (typeof window !== "undefined") {
+    const token = window.localStorage.getItem("token");
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+  }
+
+  return headers;
+}
+
+/** 로그인 권한을 확인해야 하는 API 호출에 사용합니다. */
+export function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  return fetch(apiUrl(path), {
+    ...init,
+    headers: getAuthHeaders(init.headers),
+  });
+}
+
+/** 화면 표시용 회원 레벨입니다. 실제 권한 판단은 반드시 백엔드에서 수행합니다. */
+export function getStoredUserLevel(defaultLevel = 1): number {
+  if (typeof window === "undefined") return defaultLevel;
+
+  try {
+    const rawUser = window.localStorage.getItem("user");
+    if (!rawUser) return defaultLevel;
+
+    const parsedUser = JSON.parse(rawUser);
+    const level = Number(parsedUser?.level);
+    return Number.isFinite(level) ? level : defaultLevel;
+  } catch {
+    return defaultLevel;
+  }
 }

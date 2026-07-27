@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiUrl } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 import { boardPostHref } from "@/lib/routes";
 
 export default function PostEditPage() {
@@ -12,6 +12,8 @@ export default function PostEditPage() {
   const [boardConfig, setBoardConfig] = useState<any>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [existingFiles, setExistingFiles] = useState<string[]>([]);
+  const [isGuestPost, setIsGuestPost] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({ writerName: "", password: "", title: "", content: "" });
 
@@ -23,21 +25,57 @@ export default function PostEditPage() {
     setPostId(nextPostId);
     if (!nextBoardId || !nextPostId) return;
 
-    Promise.all([
-      fetch(apiUrl(`/api/board-configs/${encodeURIComponent(nextBoardId)}`)).then((res) => res.json()),
-      fetch(apiUrl(`/api/boards/posts/${encodeURIComponent(nextPostId)}`)).then((res) => res.json()),
-    ]).then(([boardRes, postRes]) => {
-      if (boardRes.success) setBoardConfig(boardRes.data);
-      if (postRes.success) {
+    const loadPost = async () => {
+      try {
+        const [boardResponse, postResponse] = await Promise.all([
+          apiFetch(`/api/board-configs/${encodeURIComponent(nextBoardId)}`),
+          apiFetch(`/api/boards/posts/${encodeURIComponent(nextPostId)}`),
+        ]);
+
+        const boardRes = await boardResponse.json().catch(() => ({}));
+        const postRes = await postResponse.json().catch(() => ({}));
+
+        if (boardResponse.ok && boardRes.success) {
+          setBoardConfig(boardRes.data);
+        }
+
+        if (!postResponse.ok || !postRes.success) {
+          setErrorMessage(postRes.message || "게시글 정보를 불러오지 못했습니다.");
+          return;
+        }
+
         const loadedPost = postRes.data;
-        setFormData({ writerName: loadedPost.writerName || "", password: "", title: loadedPost.title || "", content: loadedPost.content || "" });
+        const guestPost = !loadedPost.memberId;
+        const canEdit = Boolean(postRes.permissions?.canEdit);
+
+        if (!guestPost && !canEdit) {
+          setErrorMessage("이 게시글을 수정할 권한이 없습니다.");
+          return;
+        }
+
+        setIsGuestPost(guestPost);
+        setFormData({
+          writerName: loadedPost.writerName || "",
+          password: "",
+          title: loadedPost.title || "",
+          content: loadedPost.content || "",
+        });
+
         try {
-          setExistingFiles(typeof loadedPost.mediaUrls === "string" ? JSON.parse(loadedPost.mediaUrls) : loadedPost.mediaUrls || []);
+          setExistingFiles(
+            typeof loadedPost.mediaUrls === "string"
+              ? JSON.parse(loadedPost.mediaUrls)
+              : loadedPost.mediaUrls || []
+          );
         } catch {
           setExistingFiles([]);
         }
+      } catch {
+        setErrorMessage("게시글 서버와 통신할 수 없습니다.");
       }
-    }).catch(() => alert("게시글 정보를 불러오지 못했습니다."));
+    };
+
+    loadPost();
   }, []);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -54,12 +92,16 @@ export default function PostEditPage() {
     files.forEach((file) => file && submitData.append("attachments", file));
 
     try {
-      const res = await fetch(apiUrl(`/api/boards/posts/${encodeURIComponent(postId)}`), { method: "PUT", body: submitData });
-      if (res.ok) {
+      const res = await apiFetch(`/api/boards/posts/${encodeURIComponent(postId)}`, {
+        method: "PUT",
+        body: submitData,
+      });
+      const responseData = await res.json().catch(() => ({}));
+
+      if (res.ok && responseData.success !== false) {
         router.push(boardPostHref(boardId, postId));
       } else {
-        const error = await res.json().catch(() => ({}));
-        alert(`수정 실패: ${error.message || "알 수 없는 오류"}`);
+        alert(`수정 실패: ${responseData.message || "알 수 없는 오류"}`);
       }
     } catch {
       alert("서버 오류가 발생했습니다.");
@@ -69,6 +111,7 @@ export default function PostEditPage() {
   };
 
   if (!boardId || !postId) return <div className="w-full text-center pt-32 text-slate-500">게시판 또는 게시글 번호가 없습니다.</div>;
+  if (errorMessage) return <div className="w-full text-center pt-32 text-red-600 font-semibold">{errorMessage}</div>;
   if (!boardConfig) return <div className="w-full text-center pt-32 text-slate-500 font-medium">로딩 중...</div>;
 
   return (
@@ -87,8 +130,19 @@ export default function PostEditPage() {
                 <input type="text" name="writerName" value={formData.writerName} required onChange={handleChange} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">비밀번호 확인 <span className="text-red-500">*</span></label>
-                <input type="password" name="password" value={formData.password} required onChange={handleChange} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl" />
+                <label className="text-sm font-bold text-slate-700">
+                  {isGuestPost ? "비밀번호 확인" : "비밀번호"}
+                  {isGuestPost && <span className="text-red-500"> *</span>}
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  required={isGuestPost}
+                  placeholder={isGuestPost ? "작성 시 입력한 비밀번호" : "회원 게시글은 입력하지 않아도 됩니다"}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl"
+                />
               </div>
             </div>
 

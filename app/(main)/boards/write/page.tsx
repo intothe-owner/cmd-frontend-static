@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiUrl } from "@/lib/api";
+import { apiFetch, getStoredUserLevel } from "@/lib/api";
 import { boardListHref } from "@/lib/routes";
 
 export default function PostWritePage() {
@@ -10,6 +10,7 @@ export default function PostWritePage() {
   const [boardId, setBoardId] = useState("");
   const [boardConfig, setBoardConfig] = useState<any>(null);
   const [files, setFiles] = useState<File[]>([]);
+  const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -17,22 +18,43 @@ export default function PostWritePage() {
     setBoardId(id);
     if (!id) return;
 
-    const userStr = localStorage.getItem("user");
-    const currentLevel = userStr ? JSON.parse(userStr).level : 1;
+    const loadBoard = async () => {
+      try {
+        const configResponse = await apiFetch(`/api/board-configs/${encodeURIComponent(id)}`);
+        const configJson = await configResponse.json().catch(() => ({}));
 
-    fetch(apiUrl(`/api/board-configs/${encodeURIComponent(id)}`))
-      .then((res) => res.json())
-      .then((json) => {
-        if (!json.success) return;
-        if (currentLevel < json.data.writeLevel) {
-          alert("글쓰기 권한이 없습니다.");
-          router.replace(boardListHref(id));
+        if (!configResponse.ok || !configJson.success || !configJson.data) {
+          setErrorMessage(configJson.message || "게시판 정보를 불러오지 못했습니다.");
           return;
         }
-        setBoardConfig(json.data);
-      })
-      .catch(() => alert("게시판 정보를 불러오지 못했습니다."));
-  }, [router]);
+
+        const config = configJson.data;
+        let currentLevel = getStoredUserLevel(1);
+
+        // 가능하면 JWT를 검증한 백엔드 응답의 실제 회원 레벨을 우선 사용합니다.
+        const viewerResponse = await apiFetch(
+          `/api/boards/${encodeURIComponent(id)}/posts?page=1&limit=1`
+        );
+        const viewerJson = await viewerResponse.json().catch(() => ({}));
+        if (viewerResponse.ok && viewerJson.success) {
+          currentLevel = Number(viewerJson.viewer?.level || 1);
+        }
+
+        if (currentLevel < Number(config.writeLevel || 1)) {
+          setErrorMessage(
+            `글쓰기 권한이 없습니다. 현재 레벨: ${currentLevel}, 필요 레벨: ${config.writeLevel}`
+          );
+          return;
+        }
+
+        setBoardConfig(config);
+      } catch {
+        setErrorMessage("게시판 서버와 통신할 수 없습니다.");
+      }
+    };
+
+    loadBoard();
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -43,15 +65,16 @@ export default function PostWritePage() {
     files.forEach((file) => file && formData.append("attachments", file));
 
     try {
-      const res = await fetch(apiUrl(`/api/boards/${encodeURIComponent(boardId)}/posts`), {
+      const res = await apiFetch(`/api/boards/${encodeURIComponent(boardId)}/posts`, {
         method: "POST",
         body: formData,
       });
-      if (res.ok) {
+      const responseData = await res.json().catch(() => ({}));
+
+      if (res.ok && responseData.success !== false) {
         router.push(boardListHref(boardId));
       } else {
-        const error = await res.json().catch(() => ({}));
-        alert(error.message || "게시글 등록에 실패했습니다.");
+        alert(responseData.message || "게시글 등록에 실패했습니다.");
       }
     } catch {
       alert("서버 오류가 발생했습니다.");
@@ -61,6 +84,7 @@ export default function PostWritePage() {
   };
 
   if (!boardId) return <div className="w-full text-center pt-32 text-slate-500">게시판 번호가 없습니다.</div>;
+  if (errorMessage) return <div className="w-full text-center pt-32 text-red-600 font-semibold">{errorMessage}</div>;
   if (!boardConfig) return <div className="w-full text-center pt-32 text-slate-500 font-medium">로딩 중...</div>;
 
   return (
