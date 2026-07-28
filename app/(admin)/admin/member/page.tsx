@@ -299,16 +299,17 @@ export default function MemberManagementPage() {
         </div>
       </div>
 
+      {/* 요약 카드: page.tsx 스타일 폼 컨테이너 클래스 활용 */}
       <div className="grid gap-4 sm:grid-cols-3">
         <SummaryCard title="전체 회원" value={summary.total} />
         <SummaryCard title="일반 회원" value={summary.normalMembers} />
         <SummaryCard title="관리자" value={summary.administrators} />
       </div>
 
-      {/* 검색 필터 영역: 참고 파일(page.tsx)과 동일한 구조 및 인풋 스타일 적용 */}
+      {/* 검색 필터 영역: 한 줄 배치 및 page.tsx 인풋 스타일 적용 */}
       <form
         onSubmit={handleSearch}
-        className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-wrap gap-4 items-center"
+        className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-wrap gap-4 items-center"
       >
         <div className="relative flex-1 min-w-[240px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
@@ -338,9 +339,10 @@ export default function MemberManagementPage() {
         </select>
 
         <div className="flex items-center gap-2">
+          {/* 검색 버튼: page.tsx의 새 팝업 등록 버튼과 동일한 스타일 */}
           <button
             type="submit"
-            className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 text-sm hover:bg-indigo-700 transition-colors"
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 text-sm"
           >
             <Search size={16} />
             검색
@@ -354,7 +356,7 @@ export default function MemberManagementPage() {
               setLevelFilter('');
               setPagination((previous) => ({ ...previous, page: 1 }));
             }}
-            className="border border-slate-300 text-slate-700 px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 text-sm hover:bg-slate-50 transition-colors"
+            className="border border-slate-300 text-slate-700 px-4 py-2 rounded-lg font-bold flex items-center gap-2 text-sm"
           >
             <RotateCcw size={16} />
             초기화
@@ -362,90 +364,87 @@ export default function MemberManagementPage() {
         </div>
       </form>
 
+      {/* 테이블 영역: page.tsx 뷰 리스트 스타일 완벽 적용 */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600">
+            <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="p-4 font-bold w-20 text-center">번호</th>
+                <th className="p-4 font-bold text-center w-20">번호</th>
                 <th className="p-4 font-bold">회원 정보</th>
                 <th className="p-4 font-bold">연락처</th>
-                <th className="p-4 font-bold">회원레벨</th>
-                <th className="p-4 font-bold">가입방식</th>
-                <th className="p-4 font-bold text-center w-32">관리</th>
+                <th className="p-4 font-bold">회원레벨/가입</th>
+                <th className="p-4 font-bold text-center">관리</th>
               </tr>
             </thead>
-
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="p-16 text-center text-slate-500">
+                  <td colSpan={5} className="p-16 text-center text-slate-500">
                     회원정보를 불러오고 있습니다...
                   </td>
                 </tr>
               ) : members.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-16 text-center text-slate-500">
+                  <td colSpan={5} className="p-16 text-center text-slate-500">
                     검색된 회원이 없습니다.
                   </td>
                 </tr>
               ) : (
                 members.map((member) => (
-                  <tr key={member.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                    <td className="p-4 text-center text-slate-500">{member.id}</td>
+                  <tr key={member.id} className="border-b border-slate-100 hover:bg-slate-50">
+                    <td className="p-4 text-center">{member.id}</td>
                     <td className="p-4">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900">{member.name}</span>
+                      <div className="flex items-center gap-2 font-bold text-slate-900">
+                        {member.name}
                         {currentUser?.id === member.id && (
-                          <span className="bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                          <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px]">
                             본인
                           </span>
                         )}
                       </div>
-                      <div className="text-slate-500 text-xs mt-0.5">{member.loginId}</div>
+                      <div className="text-xs text-slate-500 mt-1">{member.loginId}</div>
                       {member.nickname && (
-                        <div className="text-slate-400 text-xs mt-0.5">닉네임: {member.nickname}</div>
+                        <div className="text-xs text-slate-500 mt-0.5">닉네임: {member.nickname}</div>
                       )}
                     </td>
-                    <td className="p-4 text-slate-600">
+                    <td className="p-4 text-xs text-slate-500">
                       <div>{member.mobile || '-'}</div>
-                      {member.phone && <div className="text-slate-400 text-xs mt-0.5">{member.phone}</div>}
+                      {member.phone && <div className="mt-1">{member.phone}</div>}
                     </td>
                     <td className="p-4">
-                      <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded text-xs font-bold border border-slate-200">
+                      <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs mr-2 inline-block mb-1">
                         {getLevelName(member.level)}
                       </span>
-                    </td>
-                    <td className="p-4 text-slate-600">
-                      <span className="bg-slate-100 px-2 py-1 rounded text-xs border border-slate-200">
+                      <br/>
+                      <span className="bg-emerald-500 text-white px-2 py-1 rounded text-xs inline-block">
                         {member.snsProvider}
                       </span>
                     </td>
                     <td className="p-4 text-center">
-                      <div className="flex justify-center gap-2">
-                        <button
-                          title="수정"
-                          onClick={() => openEdit(member)}
-                          className="text-indigo-600 hover:bg-indigo-50 p-1.5 rounded transition-colors"
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button
-                          title="비밀번호 변경"
-                          onClick={() => void resetPassword(member)}
-                          className="text-amber-600 hover:bg-amber-50 p-1.5 rounded transition-colors"
-                        >
-                          <Key size={16} />
-                        </button>
-                        <button
-                          title="삭제"
-                          disabled={currentUser?.id === member.id}
-                          onClick={() => void deleteMember(member)}
-                          className="text-red-500 hover:bg-red-50 p-1.5 rounded disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                      {/* 액션 버튼: page.tsx 방식의 텍스트 색상 아이콘 버튼 적용 */}
+                      <button
+                        title="수정"
+                        onClick={() => openEdit(member)}
+                        className="text-indigo-600 mr-3"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        title="비밀번호 변경"
+                        onClick={() => void resetPassword(member)}
+                        className="text-amber-500 mr-3"
+                      >
+                        <Key size={16} />
+                      </button>
+                      <button
+                        title="삭제"
+                        disabled={currentUser?.id === member.id}
+                        onClick={() => void deleteMember(member)}
+                        className="text-red-500 disabled:opacity-30"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -454,26 +453,26 @@ export default function MemberManagementPage() {
           </table>
         </div>
 
-        {/* Pagination */}
+        {/* 페이지네이션 */}
         <div className="flex items-center justify-between p-4 border-t border-slate-100 bg-slate-50">
           <p className="text-sm text-slate-500">
-            총 <span className="font-bold text-slate-700">{pagination.total}</span>명
+            총 {pagination.total}명
           </p>
           <div className="flex items-center gap-2 text-sm">
             <button
               disabled={pagination.page <= 1}
               onClick={() => setPagination((prev) => ({ ...prev, page: prev.page - 1 }))}
-              className="px-3 py-1.5 border border-slate-300 rounded-lg bg-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
+              className="px-3 py-1.5 border border-slate-300 rounded-lg bg-white disabled:opacity-50"
             >
               이전
             </button>
             <span className="px-3 text-slate-600">
-              <strong className="text-slate-900">{pagination.page}</strong> / {pagination.totalPages}
+              {pagination.page} / {pagination.totalPages}
             </span>
             <button
               disabled={pagination.page >= pagination.totalPages}
               onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
-              className="px-3 py-1.5 border border-slate-300 rounded-lg bg-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
+              className="px-3 py-1.5 border border-slate-300 rounded-lg bg-white disabled:opacity-50"
             >
               다음
             </button>
@@ -481,96 +480,98 @@ export default function MemberManagementPage() {
         </div>
       </div>
 
-      {/* Edit Modal */}
+      {/* Edit Modal: page.tsx의 FORM 모드 스타일 완벽 호환 */}
       {editingMember && editForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <form
-            onSubmit={saveMember}
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-xl border border-slate-200 p-6 space-y-6"
-          >
-            <div className="flex justify-between items-start border-b border-slate-100 pb-4">
-              <div>
-                <h2 className="text-xl font-extrabold text-slate-900">회원정보 수정</h2>
-                <p className="text-sm text-slate-500 mt-1">{editingMember.loginId}</p>
-              </div>
-              <button type="button" onClick={closeEdit} className="text-slate-400 hover:text-slate-600">
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              <MemberInput
-                label="이름"
-                value={editForm.name}
-                onChange={(value) => setEditForm({ ...editForm, name: value })}
-              />
-              <MemberInput
-                label="닉네임"
-                value={editForm.nickname}
-                onChange={(value) => setEditForm({ ...editForm, nickname: value })}
-              />
-              <MemberInput
-                label="휴대전화"
-                value={editForm.mobile}
-                onChange={(value) => setEditForm({ ...editForm, mobile: value })}
-              />
-              <MemberInput
-                label="일반전화"
-                value={editForm.phone}
-                onChange={(value) => setEditForm({ ...editForm, phone: value })}
-              />
-
-              <div>
-                <label className="block font-bold mb-1 text-slate-700">생년월일</label>
-                <input
-                  type="date"
-                  value={editForm.dob}
-                  onChange={(e) => setEditForm({ ...editForm, dob: e.target.value })}
-                  className={inputClass}
-                />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <form
+              onSubmit={saveMember}
+              className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6"
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-xl font-extrabold text-slate-900">회원정보 수정</h2>
+                  <p className="text-sm text-slate-500 mt-1">{editingMember.loginId}</p>
+                </div>
+                <button type="button" onClick={closeEdit} className="text-slate-400">
+                  <X size={24} />
+                </button>
               </div>
 
-              <div>
-                <label className="block font-bold mb-1 text-slate-700">회원레벨</label>
-                <select
-                  value={editForm.level}
-                  onChange={(e) => setEditForm({ ...editForm, level: Number(e.target.value) })}
-                  className={inputClass}
-                >
-                  {Array.from({ length: 10 }, (_, index) => index + 1).map((level) => (
-                    <option key={level} value={level}>
-                      {getLevelName(level)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="col-span-2">
+              <div className="grid grid-cols-2 gap-6">
                 <MemberInput
-                  label="주소"
-                  value={editForm.address}
-                  onChange={(value) => setEditForm({ ...editForm, address: value })}
+                  label="이름"
+                  value={editForm.name}
+                  onChange={(value) => setEditForm({ ...editForm, name: value })}
                 />
-              </div>
-            </div>
+                <MemberInput
+                  label="닉네임"
+                  value={editForm.nickname}
+                  onChange={(value) => setEditForm({ ...editForm, nickname: value })}
+                />
+                <MemberInput
+                  label="휴대전화"
+                  value={editForm.mobile}
+                  onChange={(value) => setEditForm({ ...editForm, mobile: value })}
+                />
+                <MemberInput
+                  label="일반전화"
+                  value={editForm.phone}
+                  onChange={(value) => setEditForm({ ...editForm, phone: value })}
+                />
 
-            <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={closeEdit}
-                className="px-5 py-2.5 font-bold border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors"
-              >
-                취소
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="px-5 py-2.5 font-bold bg-slate-900 text-white rounded-lg hover:bg-black disabled:opacity-50 transition-colors"
-              >
-                {saving ? '저장 중...' : '수정사항 저장'}
-              </button>
-            </div>
-          </form>
+                <div>
+                  <label className="block font-bold mb-1">생년월일</label>
+                  <input
+                    type="date"
+                    value={editForm.dob}
+                    onChange={(e) => setEditForm({ ...editForm, dob: e.target.value })}
+                    className={inputClass}
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold mb-1">회원레벨</label>
+                  <select
+                    value={editForm.level}
+                    onChange={(e) => setEditForm({ ...editForm, level: Number(e.target.value) })}
+                    className={inputClass}
+                  >
+                    {Array.from({ length: 10 }, (_, index) => index + 1).map((level) => (
+                      <option key={level} value={level}>
+                        {getLevelName(level)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="col-span-2">
+                  <MemberInput
+                    label="주소"
+                    value={editForm.address}
+                    onChange={(value) => setEditForm({ ...editForm, address: value })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={closeEdit}
+                  className="w-full bg-slate-100 text-slate-700 font-bold py-3 rounded-lg hover:bg-slate-200"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="w-full bg-slate-900 text-white font-bold py-3 rounded-lg hover:bg-black disabled:opacity-50"
+                >
+                  {saving ? '저장 중...' : '수정사항 저장'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
@@ -579,7 +580,7 @@ export default function MemberManagementPage() {
 
 function SummaryCard({ title, value }: { title: string; value: number }) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
       <p className="text-sm font-bold text-slate-500">{title}</p>
       <p className="mt-2 text-3xl font-extrabold text-slate-900">{value.toLocaleString()}</p>
     </div>
@@ -597,7 +598,7 @@ function MemberInput({
 }) {
   return (
     <div>
-      <label className="block font-bold mb-1 text-slate-700">{label}</label>
+      <label className="block font-bold mb-1">{label}</label>
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
