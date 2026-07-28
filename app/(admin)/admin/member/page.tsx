@@ -12,7 +12,8 @@ import {
   Edit2, 
   Key, 
   Trash2, 
-  X 
+  X,
+  List
 } from 'lucide-react';
 
 import {
@@ -286,7 +287,7 @@ export default function MemberManagementPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       <div className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-extrabold text-slate-900">
@@ -304,12 +305,12 @@ export default function MemberManagementPage() {
         <SummaryCard title="관리자" value={summary.administrators} />
       </div>
 
-      {/* 검색 필터 영역: 가로 한 줄 정렬 */}
+      {/* 검색 필터 영역: 참고 파일(page.tsx)과 동일한 구조 및 인풋 스타일 적용 */}
       <form
         onSubmit={handleSearch}
-        className="flex items-center gap-3 rounded-2xl shadow-sm border border-slate-200 bg-white p-4"
+        className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-wrap gap-4 items-center"
       >
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-[240px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input
             type="search"
@@ -326,7 +327,7 @@ export default function MemberManagementPage() {
             setLevelFilter(event.target.value);
             setPagination((previous) => ({ ...previous, page: 1 }));
           }}
-          className={`${inputClass} w-44 shrink-0`}
+          className={`${inputClass} w-44`}
         >
           <option value="">전체 레벨</option>
           {Array.from({ length: 10 }, (_, index) => index + 1).map((level) => (
@@ -336,32 +337,34 @@ export default function MemberManagementPage() {
           ))}
         </select>
 
-        <button
-          type="submit"
-          className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 text-sm shrink-0 hover:bg-indigo-700 transition-colors"
-        >
-          <Search size={16} />
-          검색
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="submit"
+            className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 text-sm hover:bg-indigo-700 transition-colors"
+          >
+            <Search size={16} />
+            검색
+          </button>
 
-        <button
-          type="button"
-          onClick={() => {
-            setSearchInput('');
-            setSearch('');
-            setLevelFilter('');
-            setPagination((previous) => ({ ...previous, page: 1 }));
-          }}
-          className="border border-slate-300 text-slate-700 px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 text-sm shrink-0 hover:bg-slate-50 transition-colors"
-        >
-          <RotateCcw size={16} />
-          초기화
-        </button>
+          <button
+            type="button"
+            onClick={() => {
+              setSearchInput('');
+              setSearch('');
+              setLevelFilter('');
+              setPagination((previous) => ({ ...previous, page: 1 }));
+            }}
+            className="border border-slate-300 text-slate-700 px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 text-sm hover:bg-slate-50 transition-colors"
+          >
+            <RotateCcw size={16} />
+            초기화
+          </button>
+        </div>
       </form>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left whitespace-nowrap">
+          <table className="w-full text-sm text-left">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-600">
               <tr>
                 <th className="p-4 font-bold w-20 text-center">번호</th>
