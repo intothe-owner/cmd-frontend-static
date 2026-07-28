@@ -304,11 +304,12 @@ export default function MemberManagementPage() {
         <SummaryCard title="관리자" value={summary.administrators} />
       </div>
 
+      {/* 검색 필터 영역: 가로 한 줄 정렬 */}
       <form
         onSubmit={handleSearch}
-        className="flex flex-wrap items-center gap-3 rounded-2xl shadow-sm border border-slate-200 bg-white p-4"
+        className="flex items-center gap-3 rounded-2xl shadow-sm border border-slate-200 bg-white p-4"
       >
-        <div className="relative flex-1 min-w-[260px]">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input
             type="search"
@@ -325,7 +326,7 @@ export default function MemberManagementPage() {
             setLevelFilter(event.target.value);
             setPagination((previous) => ({ ...previous, page: 1 }));
           }}
-          className={`${inputClass} w-auto`}
+          className={`${inputClass} w-44 shrink-0`}
         >
           <option value="">전체 레벨</option>
           {Array.from({ length: 10 }, (_, index) => index + 1).map((level) => (
@@ -337,7 +338,7 @@ export default function MemberManagementPage() {
 
         <button
           type="submit"
-          className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 text-sm hover:bg-indigo-700 transition-colors"
+          className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 text-sm shrink-0 hover:bg-indigo-700 transition-colors"
         >
           <Search size={16} />
           검색
@@ -351,7 +352,7 @@ export default function MemberManagementPage() {
             setLevelFilter('');
             setPagination((previous) => ({ ...previous, page: 1 }));
           }}
-          className="border border-slate-300 text-slate-700 px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 text-sm hover:bg-slate-50 transition-colors"
+          className="border border-slate-300 text-slate-700 px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 text-sm shrink-0 hover:bg-slate-50 transition-colors"
         >
           <RotateCcw size={16} />
           초기화
