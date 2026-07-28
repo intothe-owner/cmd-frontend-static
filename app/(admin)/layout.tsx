@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { 
   Settings, Users, UserCheck, Menu as MenuIcon, 
-  FileText, MessageSquare, LogOut, UserCircle, Loader2 ,Megaphone
+  FileText, MessageSquare, LogOut, UserCircle, Loader2 ,Megaphone,
+  BarChart2
 } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -121,6 +122,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/admin/popup" className="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-300 hover:bg-indigo-600 hover:text-white hover:shadow-md transition-all duration-200">
             <Megaphone size={18} />
             <span className="font-medium text-sm">팝업 관리</span>
+          </Link>
+
+          <p className="px-3 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">통계 관리</p>
+          
+          <Link href="/admin/visitors" className="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-300 hover:bg-indigo-600 hover:text-white hover:shadow-md transition-all duration-200">
+            <BarChart2 size={18} />
+            <span className="font-medium text-sm">방문자 통계</span>
           </Link>
         </nav>
       </aside>

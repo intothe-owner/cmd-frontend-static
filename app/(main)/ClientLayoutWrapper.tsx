@@ -29,11 +29,36 @@ export default function ClientLayoutWrapper({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  // 💡 [추가된 로직] 페이지 방문 기록 전송 (Analytics)
+  useEffect(() => {
+    const recordVisit = async () => {
+      try {
+        // 현재 경로와 쿼리파라미터를 조합하여 pageUrl 생성
+        const queryString = searchParams.toString();
+        const fullPath = queryString ? `${pathname}?${queryString}` : pathname;
+
+        await fetch(apiUrl("/api/visits"), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ pageUrl: fullPath }),
+        });
+      } catch (error) {
+        console.error("방문 기록 전송 실패:", error);
+      }
+    };
+
+    // 관리자 페이지 등 특정 경로는 통계에서 제외하고 싶다면 아래 주석을 해제하여 사용하세요.
+    // if (!pathname.startsWith("/admin")) {
+    recordVisit();
+    // }
+  }, [pathname, searchParams]);
+
   // 💡 2. 페이지(URL) 이동 시 실시간으로 슬라이드 데이터 존재 여부 검사
   useEffect(() => {
     const checkSliderData = async () => {
       try {
-        
         const targetId = pathname === "/" ? "0" : searchParams.get("id");
         if (!targetId || pathname.startsWith("/boards") || pathname.startsWith("/admin")) {
           setHasSlider(false);
