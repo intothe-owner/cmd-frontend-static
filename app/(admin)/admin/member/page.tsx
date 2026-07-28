@@ -299,26 +299,25 @@ export default function MemberManagementPage() {
         </div>
       </div>
 
-      {/* 요약 카드: page.tsx 스타일 폼 컨테이너 클래스 활용 */}
       <div className="grid gap-4 sm:grid-cols-3">
         <SummaryCard title="전체 회원" value={summary.total} />
         <SummaryCard title="일반 회원" value={summary.normalMembers} />
         <SummaryCard title="관리자" value={summary.administrators} />
       </div>
 
-      {/* 검색 필터 영역: 한 줄 배치 및 page.tsx 인풋 스타일 적용 */}
+      {/* 검색 필터 영역: flex-wrap 제거, shrink-0 추가로 무조건 한 줄 유지 */}
       <form
         onSubmit={handleSearch}
-        className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-wrap gap-4 items-center"
+        className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex gap-4 items-center"
       >
-        <div className="relative flex-1 min-w-[240px]">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input
             type="search"
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
             placeholder="아이디, 이름, 닉네임, 연락처 검색"
-            className={`${inputClass} pl-10`}
+            className={`${inputClass} pl-10 w-full`}
           />
         </div>
 
@@ -328,7 +327,7 @@ export default function MemberManagementPage() {
             setLevelFilter(event.target.value);
             setPagination((previous) => ({ ...previous, page: 1 }));
           }}
-          className={`${inputClass} w-44`}
+          className={`${inputClass} w-44 shrink-0`}
         >
           <option value="">전체 레벨</option>
           {Array.from({ length: 10 }, (_, index) => index + 1).map((level) => (
@@ -338,11 +337,10 @@ export default function MemberManagementPage() {
           ))}
         </select>
 
-        <div className="flex items-center gap-2">
-          {/* 검색 버튼: page.tsx의 새 팝업 등록 버튼과 동일한 스타일 */}
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="submit"
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 text-sm"
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 text-sm hover:bg-indigo-700 transition-colors"
           >
             <Search size={16} />
             검색
@@ -356,7 +354,7 @@ export default function MemberManagementPage() {
               setLevelFilter('');
               setPagination((previous) => ({ ...previous, page: 1 }));
             }}
-            className="border border-slate-300 text-slate-700 px-4 py-2 rounded-lg font-bold flex items-center gap-2 text-sm"
+            className="border border-slate-300 text-slate-700 px-4 py-2 rounded-lg font-bold flex items-center gap-2 text-sm hover:bg-slate-50 transition-colors"
           >
             <RotateCcw size={16} />
             초기화
@@ -364,7 +362,6 @@ export default function MemberManagementPage() {
         </div>
       </form>
 
-      {/* 테이블 영역: page.tsx 뷰 리스트 스타일 완벽 적용 */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
@@ -422,18 +419,17 @@ export default function MemberManagementPage() {
                       </span>
                     </td>
                     <td className="p-4 text-center">
-                      {/* 액션 버튼: page.tsx 방식의 텍스트 색상 아이콘 버튼 적용 */}
                       <button
                         title="수정"
                         onClick={() => openEdit(member)}
-                        className="text-indigo-600 mr-3"
+                        className="text-indigo-600 mr-3 hover:text-indigo-800"
                       >
                         <Edit2 size={16} />
                       </button>
                       <button
                         title="비밀번호 변경"
                         onClick={() => void resetPassword(member)}
-                        className="text-amber-500 mr-3"
+                        className="text-amber-500 mr-3 hover:text-amber-700"
                       >
                         <Key size={16} />
                       </button>
@@ -441,7 +437,7 @@ export default function MemberManagementPage() {
                         title="삭제"
                         disabled={currentUser?.id === member.id}
                         onClick={() => void deleteMember(member)}
-                        className="text-red-500 disabled:opacity-30"
+                        className="text-red-500 disabled:opacity-30 hover:text-red-700"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -480,7 +476,7 @@ export default function MemberManagementPage() {
         </div>
       </div>
 
-      {/* Edit Modal: page.tsx의 FORM 모드 스타일 완벽 호환 */}
+      {/* Edit Modal */}
       {editingMember && editForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
