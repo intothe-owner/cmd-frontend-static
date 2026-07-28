@@ -98,7 +98,7 @@ export default function Header({ menus, logoUrl, siteName, hasSlider = true, mem
               onMouseEnter={() => setOpenDropdownId(menu.id)}
               onMouseLeave={() => setOpenDropdownId(null)}
             >
-              <a
+              <Link
                 href={toStaticHref(menu.url)}
                 className={`flex items-center gap-1 text-[15px] font-bold py-5 transition-colors ${textClasses}`}
               >
@@ -106,18 +106,18 @@ export default function Header({ menus, logoUrl, siteName, hasSlider = true, mem
                 {menu.children && menu.children.length > 0 && (
                   <ChevronDown size={14} className="opacity-70 group-hover:rotate-180 transition-transform" />
                 )}
-              </a>
+              </Link>
 
               {menu.children && menu.children.length > 0 && openDropdownId === menu.id && (
                 <div className="absolute top-full left-1/2 -translate-x-1/2 min-w-[160px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg py-2 animate-in fade-in slide-in-from-top-2">
                   {menu.children.map((child) => (
-                    <a
+                    <Link
                       key={child.id}
                       href={toStaticHref(child.url)}
                       className="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white transition-colors"
                     >
                       {child.name}
-                    </a>
+                    </Link>
                   ))}
                 </div>
               )}
