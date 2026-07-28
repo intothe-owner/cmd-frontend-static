@@ -305,12 +305,28 @@ export default function MemberManagementPage() {
         <SummaryCard title="관리자" value={summary.administrators} />
       </div>
 
-      {/* 검색 필터 영역: flex-wrap 제거, shrink-0 추가로 무조건 한 줄 유지 */}
+      {/* 검색 필터 영역: 레벨 선택이 먼저 오도록 배치하고 폼 박스를 벗어나지 않도록 플렉스 적용 */}
       <form
         onSubmit={handleSearch}
-        className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex gap-4 items-center"
+        className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-wrap md:flex-nowrap gap-3 items-center"
       >
-        <div className="relative flex-1">
+        <select
+          value={levelFilter}
+          onChange={(event) => {
+            setLevelFilter(event.target.value);
+            setPagination((previous) => ({ ...previous, page: 1 }));
+          }}
+          className={`${inputClass} w-full md:w-40 shrink-0`}
+        >
+          <option value="">전체 레벨</option>
+          {Array.from({ length: 10 }, (_, index) => index + 1).map((level) => (
+            <option key={level} value={level}>
+              {getLevelName(level)}
+            </option>
+          ))}
+        </select>
+
+        <div className="relative flex-1 w-full min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input
             type="search"
@@ -321,26 +337,10 @@ export default function MemberManagementPage() {
           />
         </div>
 
-        <select
-          value={levelFilter}
-          onChange={(event) => {
-            setLevelFilter(event.target.value);
-            setPagination((previous) => ({ ...previous, page: 1 }));
-          }}
-          className={`${inputClass} w-44 shrink-0`}
-        >
-          <option value="">전체 레벨</option>
-          {Array.from({ length: 10 }, (_, index) => index + 1).map((level) => (
-            <option key={level} value={level}>
-              {getLevelName(level)}
-            </option>
-          ))}
-        </select>
-
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
           <button
             type="submit"
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 text-sm hover:bg-indigo-700 transition-colors"
+            className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 text-sm flex-1 md:flex-none hover:bg-indigo-700 transition-colors"
           >
             <Search size={16} />
             검색
@@ -354,7 +354,7 @@ export default function MemberManagementPage() {
               setLevelFilter('');
               setPagination((previous) => ({ ...previous, page: 1 }));
             }}
-            className="border border-slate-300 text-slate-700 px-4 py-2 rounded-lg font-bold flex items-center gap-2 text-sm hover:bg-slate-50 transition-colors"
+            className="border border-slate-300 text-slate-700 px-5 py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 text-sm flex-1 md:flex-none hover:bg-slate-50 transition-colors"
           >
             <RotateCcw size={16} />
             초기화
